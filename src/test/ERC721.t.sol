@@ -7,7 +7,7 @@ import {DSInvariantTest} from "solmate/test/utils/DSInvariantTest.sol";
 import {ERC721TokenReceiver, ERC721} from "../ERC721.sol";
 
 contract MockERC721 is ERC721 {
-    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {}
+    constructor() ERC721("Token", "TKN") {}
 
     function tokenURI(uint256) public pure virtual override returns (string memory) {}
 
@@ -81,7 +81,7 @@ contract ERC721Test is DSTestPlus {
     MockERC721 token;
 
     function setUp() public {
-        token = new MockERC721("Token", "TKN");
+        token = new MockERC721();
     }
 
     function invariantMetadata() public {
@@ -398,13 +398,6 @@ contract ERC721Test is DSTestPlus {
 
     function testFailOwnerOfUnminted() public view {
         token.ownerOf(1337);
-    }
-
-    function testMetadata(string memory name, string memory symbol) public {
-        MockERC721 tkn = new MockERC721(name, symbol);
-
-        assertEq(tkn.name(), name);
-        assertEq(tkn.symbol(), symbol);
     }
 
     function testMint(address to, uint256 id) public {

@@ -21,15 +21,39 @@ abstract contract ERC721 {
     uint256 constant NAME_SLOT = 0x0;
     uint256 constant SYMBOL_SLOT = 0x1;
 
-    function name() public view returns (string memory _name) {
+    function name() public view returns (string memory) {
         assembly {
-            _name := sload(NAME_SLOT)
+            mstore(0x20, 0x20)
+            let nameBytes := sload(NAME_SLOT)
+            let nameLength
+            for { let i := 0 } lt(i, 32) { i := add(i, 1) }
+            {
+                if iszero(shl(mul(add(i, 1), 0x08), nameBytes)) { 
+                    nameLength := add(i, 1)
+                    break
+                }
+            }
+            mstore(0x60, nameBytes)
+            mstore8(0x5f, nameLength)
+            return(0x20, 0x60)
         }
     }
 
-    function symbol() public view returns (string memory _symbol) {
+    function symbol() public view returns (string memory) {
         assembly {
-            _symbol := sload(SYMBOL_SLOT)
+            mstore(0x20, 0x20)
+            let symbolBytes := sload(SYMBOL_SLOT)
+            let symbolLength
+            for { let i := 0 } lt(i, 32) { i := add(i, 1) }
+            {
+                if iszero(shl(mul(add(i, 1), 0x08), symbolBytes)) { 
+                    symbolLength := add(i, 1)
+                    break
+                }
+            }
+            mstore(0x60, symbolBytes)
+            mstore8(0x5f, symbolLength)
+            return(0x20, 0x60)
         }
     }
 
@@ -39,90 +63,37 @@ abstract contract ERC721 {
                       ERC721 BALANCE/OWNER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    uint256 constant OWNER_OF_START_SLOT = 0x1000;
+    mapping(uint256 => address) internal _ownerOf;
 
-    function _getOwnerOf(uint256 id) internal view returns (address result) {
-        assembly {
-            result := sload(add(OWNER_OF_START_SLOT, id))
-        }
-    }
-
-    function _setOwnerOf(uint256 id, address owner) internal {
-        assembly {
-            sstore(add(OWNER_OF_START_SLOT, id), owner)
-        }
-    }
+    mapping(address => uint256) internal _balanceOf;
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
-        require((owner = _getOwnerOf(id)) != address(0), "NOT_MINTED");
-    }
-
-    uint256 constant BALANCE_OF_SLOT_POS = 0x100000000000000000000000;
-
-    function _getBalanceOf(address addr) internal view returns (uint256 result) {
-        assembly {
-            result := sload(shl(BALANCE_OF_SLOT_POS, addr))
-        }
-    }
-
-    function _setBalanceOf(address addr, uint256 bal) internal {
-        assembly {
-            sstore(shl(BALANCE_OF_SLOT_POS, addr), bal)
-        }
+        require((owner = _ownerOf[id]) != address(0), "NOT_MINTED");
     }
 
     function balanceOf(address owner) public view virtual returns (uint256) {
         require(owner != address(0), "ZERO_ADDRESS");
 
-        return _getBalanceOf(owner);
+        return _balanceOf[owner];
     }
 
     /*//////////////////////////////////////////////////////////////
                          ERC721 APPROVAL STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    uint256 constant GET_APPROVED_START_SLOT = 0x10000000;
+    mapping(uint256 => address) public getApproved;
 
-    function _getApproved(uint256 id) internal view returns (address result) {
-        assembly {
-            result := sload(add(GET_APPROVED_START_SLOT, id))
-        }
-    }
-
-    function _setApproved(uint256 id, address operator) internal {
-        assembly {
-            sstore(add(GET_APPROVED_START_SLOT, id), operator)
-        }
-    }
-
-    function getApproved(uint256 id) public view returns (address) {
-        return _getApproved(id);
-    }
-
-    function _getIsApprovedForAll(address owner, address spender) internal view returns (bool result) {
-        assembly {
-            result := sload(add(owner, spender))
-        }
-    }
-
-    function _setIsApprovedForAll(address owner, address spender, bool approved) internal {
-        assembly {
-            sstore(add(owner, spender), approved)
-        }
-    }
-
-    function isApprovedForAll(address owner, address spender) public view returns (bool) {
-        return _getIsApprovedForAll(owner, spender);
-    }
+    mapping(address => mapping(address => bool)) public isApprovedForAll;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(string memory _name, string memory _symbol) {
+    // Params must be: name, symbol
+    constructor(string memory, string memory) {
         assembly {
-            sstore(NAME_SLOT, _name)
-            sstore(SYMBOL_SLOT, _symbol)
+            sstore(NAME_SLOT, mload(0xa0))
+            sstore(SYMBOL_SLOT, mload(0xe0))
         }
     }
 
@@ -131,17 +102,17 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     function approve(address spender, uint256 id) public virtual {
-        address owner = _getOwnerOf(id);
+        address owner = _ownerOf[id];
 
-        require(msg.sender == owner || _getIsApprovedForAll(owner, msg.sender), "NOT_AUTHORIZED");
+        require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
 
-        _setApproved(id, spender);
+        getApproved[id] = spender;
 
         emit Approval(owner, spender, id);
     }
 
     function setApprovalForAll(address operator, bool approved) public virtual {
-        _setIsApprovedForAll(msg.sender, operator, approved);
+        isApprovedForAll[msg.sender][operator] = approved;
 
         emit ApprovalForAll(msg.sender, operator, approved);
     }
@@ -151,26 +122,26 @@ abstract contract ERC721 {
         address to,
         uint256 id
     ) public virtual {
-        require(from == _getOwnerOf(id), "WRONG_FROM");
+        require(from == _ownerOf[id], "WRONG_FROM");
 
         require(to != address(0), "INVALID_RECIPIENT");
 
         require(
-            msg.sender == from || _getIsApprovedForAll(from, msg.sender) || msg.sender == _getApproved(id),
+            msg.sender == from || isApprovedForAll[from][msg.sender] || msg.sender == getApproved[id],
             "NOT_AUTHORIZED"
         );
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
         unchecked {
-            _setBalanceOf(from, _getBalanceOf(from) - 1);
+            _balanceOf[from]--;
 
-            _setBalanceOf(to, _getBalanceOf(to) + 1);
+            _balanceOf[to]++;
         }
 
-        _setOwnerOf(id, to);
+        _ownerOf[id] = to;
 
-        _setApproved(id, address(0));
+        delete getApproved[id];
 
         emit Transfer(from, to, id);
     }
@@ -224,31 +195,31 @@ abstract contract ERC721 {
     function _mint(address to, uint256 id) internal virtual {
         require(to != address(0), "INVALID_RECIPIENT");
 
-        require(_getOwnerOf(id) == address(0), "ALREADY_MINTED");
+        require(_ownerOf[id] == address(0), "ALREADY_MINTED");
 
         // Counter overflow is incredibly unrealistic.
         unchecked {
-            _setBalanceOf(to, _getBalanceOf(to) + 1);
+            _balanceOf[to]++;
         }
 
-        _setOwnerOf(id, to);
+        _ownerOf[id] = to;
 
         emit Transfer(address(0), to, id);
     }
 
     function _burn(uint256 id) internal virtual {
-        address owner = _getOwnerOf(id);
+        address owner = _ownerOf[id];
 
         require(owner != address(0), "NOT_MINTED");
 
         // Ownership check above ensures no underflow.
         unchecked {
-            _setBalanceOf(owner, _getBalanceOf(owner) - 1);
+            _balanceOf[owner]--;
         }
 
-        _setOwnerOf(id, address(0));
+        delete _ownerOf[id];
 
-        _setApproved(id, address(0));
+        delete getApproved[id];
 
         emit Transfer(owner, address(0), id);
     }

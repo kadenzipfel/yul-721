@@ -65,9 +65,9 @@ abstract contract ERC721 {
 
     uint256 constant OWNER_OF_START_SLOT = 0x1000;
 
-    function _getOwnerOf(uint256 id) internal view returns (address owner) {
+    function _getOwnerOf(uint256 id) internal view returns (address result) {
         assembly {
-            owner := sload(add(OWNER_OF_START_SLOT, id))
+            result := sload(add(OWNER_OF_START_SLOT, id))
         }
     }
 
@@ -81,12 +81,24 @@ abstract contract ERC721 {
         require((owner = _getOwnerOf(id)) != address(0), "NOT_MINTED");
     }
 
-    mapping(address => uint256) internal _balanceOf;
+    uint256 constant BALANCE_OF_SLOT_MUL = 0x100000000000000000000000;
+
+    function _getBalanceOf(address addr) internal view returns (uint256 result) {
+        assembly {
+            result := sload(mul(BALANCE_OF_SLOT_MUL, addr))
+        }
+    }
+
+    function _setBalanceOf(address addr, uint256 bal) internal {
+        assembly {
+            sstore(mul(BALANCE_OF_SLOT_MUL, addr), bal)
+        }
+    }
 
     function balanceOf(address owner) public view virtual returns (uint256) {
         require(owner != address(0), "ZERO_ADDRESS");
 
-        return _balanceOf[owner];
+        return _getBalanceOf(owner);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -146,9 +158,9 @@ abstract contract ERC721 {
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.
         unchecked {
-            _balanceOf[from]--;
+            _setBalanceOf(from, _getBalanceOf(from) - 1);
 
-            _balanceOf[to]++;
+            _setBalanceOf(to, _getBalanceOf(to) + 1);
         }
 
         _setOwnerOf(id, to);
@@ -211,7 +223,7 @@ abstract contract ERC721 {
 
         // Counter overflow is incredibly unrealistic.
         unchecked {
-            _balanceOf[to]++;
+            _setBalanceOf(to, _getBalanceOf(to) + 1);
         }
 
         _setOwnerOf(id, to);
@@ -226,7 +238,7 @@ abstract contract ERC721 {
 
         // Ownership check above ensures no underflow.
         unchecked {
-            _balanceOf[owner]--;
+            _setBalanceOf(owner, _getBalanceOf(owner) - 1);
         }
 
         _setOwnerOf(id, address(0));

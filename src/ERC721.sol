@@ -57,17 +57,17 @@ abstract contract ERC721 {
         require((owner = _getOwnerOf(id)) != address(0), "NOT_MINTED");
     }
 
-    uint256 constant BALANCE_OF_SLOT_MUL = 0x100000000000000000000000;
+    uint256 constant BALANCE_OF_SLOT_POS = 0x100000000000000000000000;
 
     function _getBalanceOf(address addr) internal view returns (uint256 result) {
         assembly {
-            result := sload(mul(BALANCE_OF_SLOT_MUL, addr))
+            result := sload(shl(BALANCE_OF_SLOT_POS, addr))
         }
     }
 
     function _setBalanceOf(address addr, uint256 bal) internal {
         assembly {
-            sstore(mul(BALANCE_OF_SLOT_MUL, addr), bal)
+            sstore(shl(BALANCE_OF_SLOT_POS, addr), bal)
         }
     }
 

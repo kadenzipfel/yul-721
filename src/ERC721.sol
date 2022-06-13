@@ -39,7 +39,6 @@ abstract contract ERC721 {
                       ERC721 BALANCE/OWNER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-
     uint256 constant OWNER_OF_START_SLOT = 0x1000;
 
     function _getOwnerOf(uint256 id) internal view returns (address result) {
@@ -82,7 +81,23 @@ abstract contract ERC721 {
                          ERC721 APPROVAL STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 => address) public getApproved;
+    uint256 constant GET_APPROVED_START_SLOT = 0x10000000;
+
+    function _getApproved(uint256 id) internal view returns (address result) {
+        assembly {
+            result := sload(add(GET_APPROVED_START_SLOT, id))
+        }
+    }
+
+    function _setApproved(uint256 id, address operator) internal {
+        assembly {
+            sstore(add(GET_APPROVED_START_SLOT, id), operator)
+        }
+    }
+
+    function getApproved(uint256 id) public view returns (address) {
+        return _getApproved(id);
+    }
 
     mapping(address => mapping(address => bool)) public isApprovedForAll;
 
@@ -106,7 +121,7 @@ abstract contract ERC721 {
 
         require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
 
-        getApproved[id] = spender;
+        _setApproved(id, spender);
 
         emit Approval(owner, spender, id);
     }
@@ -127,7 +142,7 @@ abstract contract ERC721 {
         require(to != address(0), "INVALID_RECIPIENT");
 
         require(
-            msg.sender == from || isApprovedForAll[from][msg.sender] || msg.sender == getApproved[id],
+            msg.sender == from || isApprovedForAll[from][msg.sender] || msg.sender == _getApproved(id),
             "NOT_AUTHORIZED"
         );
 
@@ -141,7 +156,7 @@ abstract contract ERC721 {
 
         _setOwnerOf(id, to);
 
-        delete getApproved[id];
+        _setApproved(id, address(0));
 
         emit Transfer(from, to, id);
     }
@@ -219,7 +234,7 @@ abstract contract ERC721 {
 
         _setOwnerOf(id, address(0));
 
-        delete getApproved[id];
+        _setApproved(id, address(0));
 
         emit Transfer(owner, address(0), id);
     }

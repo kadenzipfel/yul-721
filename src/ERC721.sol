@@ -56,10 +56,6 @@ abstract contract ERC721 {
 
     mapping(address => uint256) internal _balanceOf;
 
-    function ownerOf(uint256 id) public view virtual returns (address owner) {
-        require((owner = _getOwnerOf(id)) != address(0), "NOT_MINTED");
-    }
-
     function balanceOf(address owner) public view virtual returns (uint256) {
         require(owner != address(0), "ZERO_ADDRESS");
 

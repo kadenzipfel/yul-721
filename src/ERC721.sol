@@ -123,7 +123,21 @@ abstract contract ERC721 {
         return _getApproved(id);
     }
 
-    mapping(address => mapping(address => bool)) public isApprovedForAll;
+    function _getIsApprovedForAll(address owner, address spender) internal view returns (bool result) {
+        assembly {
+            result := sload(add(owner, spender))
+        }
+    }
+
+    function _setIsApprovedForAll(address owner, address spender, bool approved) internal {
+        assembly {
+            sstore(add(owner, spender), approved)
+        }
+    }
+
+    function isApprovedForAll(address owner, address spender) public view returns (bool) {
+        return _getIsApprovedForAll(owner, spender);
+    }
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -144,7 +158,7 @@ abstract contract ERC721 {
     function approve(address spender, uint256 id) public virtual {
         address owner = _getOwnerOf(id);
 
-        require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
+        require(msg.sender == owner || _getIsApprovedForAll(owner, msg.sender), "NOT_AUTHORIZED");
 
         _setApproved(id, spender);
 
@@ -152,7 +166,7 @@ abstract contract ERC721 {
     }
 
     function setApprovalForAll(address operator, bool approved) public virtual {
-        isApprovedForAll[msg.sender][operator] = approved;
+        _setIsApprovedForAll(msg.sender, operator, approved);
 
         emit ApprovalForAll(msg.sender, operator, approved);
     }
@@ -167,7 +181,7 @@ abstract contract ERC721 {
         require(to != address(0), "INVALID_RECIPIENT");
 
         require(
-            msg.sender == from || isApprovedForAll[from][msg.sender] || msg.sender == _getApproved(id),
+            msg.sender == from || _getIsApprovedForAll(from, msg.sender) || msg.sender == _getApproved(id),
             "NOT_AUTHORIZED"
         );
 

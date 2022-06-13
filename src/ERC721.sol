@@ -18,9 +18,20 @@ abstract contract ERC721 {
                          METADATA STORAGE/LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    string public name;
+    uint256 constant NAME_SLOT = 0x0;
+    uint256 constant SYMBOL_SLOT = 0x1;
 
-    string public symbol;
+    function name() public view returns (string memory _name) {
+        assembly {
+            _name := sload(NAME_SLOT)
+        }
+    }
+
+    function symbol() public view returns (string memory _symbol) {
+        assembly {
+            _symbol := sload(SYMBOL_SLOT)
+        }
+    }
 
     function tokenURI(uint256 id) public view virtual returns (string memory);
 
@@ -55,8 +66,10 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     constructor(string memory _name, string memory _symbol) {
-        name = _name;
-        symbol = _symbol;
+        assembly {
+            sstore(NAME_SLOT, _name)
+            sstore(SYMBOL_SLOT, _symbol)
+        }
     }
 
     /*//////////////////////////////////////////////////////////////

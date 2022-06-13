@@ -63,13 +63,25 @@ abstract contract ERC721 {
                       ERC721 BALANCE/OWNER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    mapping(uint256 => address) internal _ownerOf;
+    uint256 constant OWNER_OF_START_SLOT = 0x1000;
 
-    mapping(address => uint256) internal _balanceOf;
+    function _getOwnerOf(uint256 id) internal view returns (address owner) {
+        assembly {
+            owner := sload(add(OWNER_OF_START_SLOT, id))
+        }
+    }
+
+    function _setOwnerOf(uint256 id, address owner) internal {
+        assembly {
+            sstore(add(OWNER_OF_START_SLOT, id), owner)
+        }
+    }
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
-        require((owner = _ownerOf[id]) != address(0), "NOT_MINTED");
+        require((owner = _getOwnerOf(id)) != address(0), "NOT_MINTED");
     }
+
+    mapping(address => uint256) internal _balanceOf;
 
     function balanceOf(address owner) public view virtual returns (uint256) {
         require(owner != address(0), "ZERO_ADDRESS");
@@ -102,7 +114,7 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     function approve(address spender, uint256 id) public virtual {
-        address owner = _ownerOf[id];
+        address owner = _getOwnerOf(id);
 
         require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
 
@@ -122,7 +134,7 @@ abstract contract ERC721 {
         address to,
         uint256 id
     ) public virtual {
-        require(from == _ownerOf[id], "WRONG_FROM");
+        require(from == _getOwnerOf(id), "WRONG_FROM");
 
         require(to != address(0), "INVALID_RECIPIENT");
 
@@ -139,7 +151,7 @@ abstract contract ERC721 {
             _balanceOf[to]++;
         }
 
-        _ownerOf[id] = to;
+        _setOwnerOf(id, to);
 
         delete getApproved[id];
 
@@ -195,20 +207,20 @@ abstract contract ERC721 {
     function _mint(address to, uint256 id) internal virtual {
         require(to != address(0), "INVALID_RECIPIENT");
 
-        require(_ownerOf[id] == address(0), "ALREADY_MINTED");
+        require(_getOwnerOf(id) == address(0), "ALREADY_MINTED");
 
         // Counter overflow is incredibly unrealistic.
         unchecked {
             _balanceOf[to]++;
         }
 
-        _ownerOf[id] = to;
+        _setOwnerOf(id, to);
 
         emit Transfer(address(0), to, id);
     }
 
     function _burn(uint256 id) internal virtual {
-        address owner = _ownerOf[id];
+        address owner = _getOwnerOf(id);
 
         require(owner != address(0), "NOT_MINTED");
 
@@ -217,7 +229,7 @@ abstract contract ERC721 {
             _balanceOf[owner]--;
         }
 
-        delete _ownerOf[id];
+        _setOwnerOf(id, address(0));
 
         delete getApproved[id];
 

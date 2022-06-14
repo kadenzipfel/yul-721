@@ -192,7 +192,7 @@ abstract contract ERC721 {
             }
 
             // require(
-            //     msg.sender == from || _getIsApprovedForAll(from, msg.sender) || msg.sender == _getApproved(id),
+            //     msg.sender == from || isApprovedForAll[from][msg.sender] || msg.sender == getApproved[id],
             //     "NOT_AUTHORIZED"
             // );
             if iszero(or(eq(caller(), from), or(sload(add(from, caller())), sload(add(GET_APPROVED_START_SLOT, id))))) {
@@ -200,14 +200,14 @@ abstract contract ERC721 {
                 mstore(0x00, 0x4E4F545F415554484F52495A4544)
                 revert(0x12, 0x0E)
             }
-        }
 
-        // Underflow of the sender's balance is impossible because we check for
-        // ownership above and the recipient's balance can't realistically overflow.
-        unchecked {
-            _setBalanceOf(from, _getBalanceOf(from) - 1);
+            // Underflow of the sender's balance is impossible because we check for
+            // ownership above and the recipient's balance can't realistically overflow.
 
-            _setBalanceOf(to, _getBalanceOf(to) + 1);
+            // Decrement from balance
+            sstore(mul(BALANCE_OF_SLOT_MUL, from), sub(sload(mul(BALANCE_OF_SLOT_MUL, from)), 1))
+            // Increment to balance
+            sstore(mul(BALANCE_OF_SLOT_MUL, to), add(sload(mul(BALANCE_OF_SLOT_MUL, to)), 1))
         }
 
         _setOwnerOf(id, to);

@@ -317,7 +317,7 @@ abstract contract ERC721 {
                 revert(0x0F, 0x11)
             }
 
-            // require(_getOwnerOf(id) == address(0), "ALREADY_MINTED");
+            // require(ownerOf[id] == address(0), "ALREADY_MINTED");
             if iszero(iszero(sload(add(OWNER_OF_START_SLOT, id)))) {
                 // 0x414C52454144595F4D494E544544: "ALREADY_MINTED"
                 mstore(0x00, 0x414C52454144595F4D494E544544)
@@ -344,20 +344,36 @@ abstract contract ERC721 {
     }
 
     function _burn(uint256 id) internal virtual {
-        address owner = _getOwnerOf(id);
+        assembly {
+            let owner := sload(add(OWNER_OF_START_SLOT, id))
 
-        require(owner != address(0), "NOT_MINTED");
+            // require(owner != address(0), "NOT_MINTED");
+            if eq(owner, 0) {
+                // 0x4E4F545F4D494E544544: "NOT_MINTED"
+                mstore(0x00, 0x4E4F545F4D494E544544)
+                revert(0x16, 0x0a)
+            }
 
-        // Ownership check above ensures no underflow.
-        unchecked {
-            _setBalanceOf(owner, _getBalanceOf(owner) - 1);
+            // Decrement balance of recipient
+            // Ownership check above ensures no underflow.
+            sstore(mul(BALANCE_OF_SLOT_MUL, owner), sub(sload(mul(BALANCE_OF_SLOT_MUL, owner)), 1))
+
+            // Set owner to zero address
+            sstore(add(OWNER_OF_START_SLOT, id), 0)
+
+            // Clear approval
+            sstore(add(GET_APPROVED_START_SLOT, id), 0)
+
+            // emit Transfer(owner, address(0), id);
+            log4(
+                0,
+                0,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                owner,
+                0,
+                id
+            )
         }
-
-        _setOwnerOf(id, address(0));
-
-        _setApproved(id, address(0));
-
-        emit Transfer(owner, address(0), id);
     }
 
     /*//////////////////////////////////////////////////////////////

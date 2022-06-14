@@ -156,13 +156,29 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     function approve(address spender, uint256 id) public virtual {
-        address owner = _getOwnerOf(id);
+        assembly {
+            let owner := sload(add(OWNER_OF_START_SLOT, id))
 
-        require(msg.sender == owner || _getIsApprovedForAll(owner, msg.sender), "NOT_AUTHORIZED");
+            // require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
+            if iszero(or(eq(caller(), owner), sload(add(owner, caller())))) {
+                // 0x4E4F545F415554484F52495A4544: "NOT_AUTHORIZED"
+                mstore(0x00, 0x4E4F545F415554484F52495A4544)
+                revert(0x12, 0x0E)
+            }
 
-        _setApproved(id, spender);
-
-        emit Approval(owner, spender, id);
+            // Set approval
+            sstore(add(GET_APPROVED_START_SLOT, id), spender)
+            
+            // emit Approval(owner, spender, id);
+            log4(
+                0,
+                0,
+                0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925,
+                owner,
+                spender,
+                id
+            )
+        }
     }
 
     function setApprovalForAll(address operator, bool approved) public virtual {

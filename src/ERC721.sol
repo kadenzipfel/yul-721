@@ -309,18 +309,38 @@ abstract contract ERC721 {
     //////////////////////////////////////////////////////////////*/
 
     function _mint(address to, uint256 id) internal virtual {
-        require(to != address(0), "INVALID_RECIPIENT");
+        assembly {
+            // require(to != address(0), "INVALID_RECIPIENT");
+            if eq(to, 0) {
+                // 0x494E56414C49445F524543495049454E54: "INVALID_RECIPIENT"
+                mstore(0x00, 0x494E56414C49445F524543495049454E54)
+                revert(0x0F, 0x11)
+            }
 
-        require(_getOwnerOf(id) == address(0), "ALREADY_MINTED");
+            // require(_getOwnerOf(id) == address(0), "ALREADY_MINTED");
+            if iszero(iszero(sload(add(OWNER_OF_START_SLOT, id)))) {
+                // 0x414C52454144595F4D494E544544: "ALREADY_MINTED"
+                mstore(0x00, 0x414C52454144595F4D494E544544)
+                revert(0x12, 0x0E)
+            }
 
-        // Counter overflow is incredibly unrealistic.
-        unchecked {
-            _setBalanceOf(to, _getBalanceOf(to) + 1);
+            // Increment balance of recipient
+            // Counter overflow is incredibly unrealistic.
+            sstore(mul(BALANCE_OF_SLOT_MUL, to), add(sload(mul(BALANCE_OF_SLOT_MUL, to)), 1))
+
+            // Set ownerOf
+            sstore(add(OWNER_OF_START_SLOT, id), to)
+
+            // emit Transfer(address(0), to, id);
+            log4(
+                0,
+                0,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                0,
+                to,
+                id
+            )
         }
-
-        _setOwnerOf(id, to);
-
-        emit Transfer(address(0), to, id);
     }
 
     function _burn(uint256 id) internal virtual {

@@ -8,18 +8,18 @@ abstract contract ERC721 {
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
-    event Transfer(address indexed from, address indexed to, uint256 indexed id);
+    // event Transfer(address indexed from, address indexed to, uint256 indexed id);
 
-    event Approval(address indexed owner, address indexed spender, uint256 indexed id);
+    // event Approval(address indexed owner, address indexed spender, uint256 indexed id);
 
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+    // event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     /*//////////////////////////////////////////////////////////////
                          METADATA STORAGE/LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    uint256 constant NAME_SLOT = 0x0;
-    uint256 constant SYMBOL_SLOT = 0x1;
+    uint256 constant NAME_SLOT = 0x00;
+    uint256 constant SYMBOL_SLOT = 0x01;
 
     function name() public view returns (string memory) {
         assembly {

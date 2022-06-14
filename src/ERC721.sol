@@ -208,11 +208,13 @@ abstract contract ERC721 {
             sstore(mul(BALANCE_OF_SLOT_MUL, from), sub(sload(mul(BALANCE_OF_SLOT_MUL, from)), 1))
             // Increment to balance
             sstore(mul(BALANCE_OF_SLOT_MUL, to), add(sload(mul(BALANCE_OF_SLOT_MUL, to)), 1))
+
+            // Set to address as owner
+            sstore(add(OWNER_OF_START_SLOT, id), to)
+
+            // Set approved to zero address
+            sstore(add(GET_APPROVED_START_SLOT, id), 0)
         }
-
-        _setOwnerOf(id, to);
-
-        _setApproved(id, address(0));
 
         emit Transfer(from, to, id);
     }

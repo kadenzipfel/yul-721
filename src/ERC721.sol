@@ -65,18 +65,6 @@ abstract contract ERC721 {
 
     uint256 constant OWNER_OF_START_SLOT = 0x1000;
 
-    function _getOwnerOf(uint256 id) internal view returns (address result) {
-        assembly {
-            result := sload(add(OWNER_OF_START_SLOT, id))
-        }
-    }
-
-    function _setOwnerOf(uint256 id, address owner) internal {
-        assembly {
-            sstore(add(OWNER_OF_START_SLOT, id), owner)
-        }
-    }
-
     function ownerOf(uint256 id) public view virtual returns (address owner) {
         assembly {
             owner := sload(add(OWNER_OF_START_SLOT, id))
@@ -91,18 +79,6 @@ abstract contract ERC721 {
     }
 
     uint256 constant BALANCE_OF_SLOT_MUL = 0x100000000000000000000000;
-
-    function _getBalanceOf(address addr) internal view returns (uint256 result) {
-        assembly {
-            result := sload(mul(BALANCE_OF_SLOT_MUL, addr))
-        }
-    }
-
-    function _setBalanceOf(address addr, uint256 bal) internal {
-        assembly {
-            sstore(mul(BALANCE_OF_SLOT_MUL, addr), bal)
-        }
-    }
 
     function balanceOf(address owner) public view virtual returns (uint256 _balance) {
         assembly {
@@ -123,38 +99,16 @@ abstract contract ERC721 {
 
     uint256 constant GET_APPROVED_START_SLOT = 0x10000000;
 
-    function _getApproved(uint256 id) internal view returns (address result) {
-        assembly {
-            result := sload(add(GET_APPROVED_START_SLOT, id))
-        }
-    }
-
-    function _setApproved(uint256 id, address operator) internal {
-        assembly {
-            sstore(add(GET_APPROVED_START_SLOT, id), operator)
-        }
-    }
-
     function getApproved(uint256 id) public view returns (address approved) {
         assembly {
             approved := sload(add(GET_APPROVED_START_SLOT, id))
         }
     }
 
-    function _getIsApprovedForAll(address owner, address spender) internal view returns (bool result) {
+    function isApprovedForAll(address owner, address spender) public view returns (bool approvedForAll) {
         assembly {
-            result := sload(add(owner, spender))
+            approvedForAll := sload(add(owner, spender))
         }
-    }
-
-    function _setIsApprovedForAll(address owner, address spender, bool approved) internal {
-        assembly {
-            sstore(add(owner, spender), approved)
-        }
-    }
-
-    function isApprovedForAll(address owner, address spender) public view returns (bool) {
-        return _getIsApprovedForAll(owner, spender);
     }
 
     /*//////////////////////////////////////////////////////////////

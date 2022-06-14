@@ -78,7 +78,16 @@ abstract contract ERC721 {
     }
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
-        require((owner = _getOwnerOf(id)) != address(0), "NOT_MINTED");
+        assembly {
+            owner := sload(add(OWNER_OF_START_SLOT, id))
+
+            // require(owner != address(0), "NOT_MINTED");
+            if iszero(owner) {
+                // 0x4E4F545F4D494E544544: "NOT_MINTED"
+                mstore(0x00, 0x4E4F545F4D494E544544)
+                revert(0x16, 0x0a)
+            }
+        }
     }
 
     uint256 constant BALANCE_OF_SLOT_MUL = 0x100000000000000000000000;

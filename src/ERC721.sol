@@ -214,9 +214,17 @@ abstract contract ERC721 {
 
             // Set approved to zero address
             sstore(add(GET_APPROVED_START_SLOT, id), 0)
-        }
 
-        emit Transfer(from, to, id);
+            // emit Transfer(from, to, id);
+            log4(
+                0,
+                0,
+                0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef,
+                from,
+                to,
+                id
+            )
+        }
     }
 
     function safeTransferFrom(

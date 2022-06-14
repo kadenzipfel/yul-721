@@ -184,7 +184,7 @@ abstract contract ERC721 {
             }
 
             // require(to != address(0), "INVALID_RECIPIENT");
-            if eq(to, 0) {
+            if iszero(to) {
                 // 0x494E56414C49445F524543495049454E54: "INVALID_RECIPIENT"
                 mstore(0x00, 0x494E56414C49445F524543495049454E54)
                 revert(0x0F, 0x11)
@@ -283,7 +283,7 @@ abstract contract ERC721 {
     function _mint(address to, uint256 id) internal virtual {
         assembly {
             // require(to != address(0), "INVALID_RECIPIENT");
-            if eq(to, 0) {
+            if iszero(to) {
                 // 0x494E56414C49445F524543495049454E54: "INVALID_RECIPIENT"
                 mstore(0x00, 0x494E56414C49445F524543495049454E54)
                 revert(0x0F, 0x11)
@@ -320,7 +320,7 @@ abstract contract ERC721 {
             let owner := sload(add(OWNER_OF_START_SLOT, id))
 
             // require(owner != address(0), "NOT_MINTED");
-            if eq(owner, 0) {
+            if iszero(owner) {
                 // 0x4E4F545F4D494E544544: "NOT_MINTED"
                 mstore(0x00, 0x4E4F545F4D494E544544)
                 revert(0x16, 0x0a)

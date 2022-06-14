@@ -176,14 +176,31 @@ abstract contract ERC721 {
         address to,
         uint256 id
     ) public virtual {
-        require(from == _getOwnerOf(id), "WRONG_FROM");
+        assembly {
+            // require(from == ownerOf[id], "WRONG_FROM");
+            if iszero(eq(from, sload(add(OWNER_OF_START_SLOT, id)))) {
+                // 0x57524F4E475F46524F4D: "WRONG_FROM"
+                mstore(0x00, 0x57524F4E475F46524F4D)
+                revert(0xB0, 0x0A)
+            }
 
-        require(to != address(0), "INVALID_RECIPIENT");
+            // require(to != address(0), "INVALID_RECIPIENT");
+            if eq(to, 0) {
+                // 0x494E56414C49445F524543495049454E54: "INVALID_RECIPIENT"
+                mstore(0x00, 0x494E56414C49445F524543495049454E54)
+                revert(0x0F, 0x11)
+            }
 
-        require(
-            msg.sender == from || _getIsApprovedForAll(from, msg.sender) || msg.sender == _getApproved(id),
-            "NOT_AUTHORIZED"
-        );
+            // require(
+            //     msg.sender == from || _getIsApprovedForAll(from, msg.sender) || msg.sender == _getApproved(id),
+            //     "NOT_AUTHORIZED"
+            // );
+            if iszero(or(eq(caller(), from), or(sload(add(from, caller())), sload(add(GET_APPROVED_START_SLOT, id))))) {
+                // 0x4E4F545F415554484F52495A4544: "NOT_AUTHORIZED"
+                mstore(0x00, 0x4E4F545F415554484F52495A4544)
+                revert(0x12, 0x0E)
+            }
+        }
 
         // Underflow of the sender's balance is impossible because we check for
         // ownership above and the recipient's balance can't realistically overflow.

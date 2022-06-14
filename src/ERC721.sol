@@ -182,9 +182,20 @@ abstract contract ERC721 {
     }
 
     function setApprovalForAll(address operator, bool approved) public virtual {
-        _setIsApprovedForAll(msg.sender, operator, approved);
+        assembly {
+            // Set approval for all
+            sstore(add(caller(), operator), approved)
 
-        emit ApprovalForAll(msg.sender, operator, approved);
+            // emit ApprovalForAll(msg.sender, operator, approved);
+            log4(
+                0,
+                0,
+                0x17307eab39ab6107e8899845ad3d59bd9653f200f220920489ca2b5937696c31,
+                caller(),
+                operator,
+                approved
+            )
+        }
     }
 
     function transferFrom(

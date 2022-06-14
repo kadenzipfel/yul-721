@@ -136,7 +136,9 @@ abstract contract ERC721 {
     }
 
     function getApproved(uint256 id) public view returns (address approved) {
-        return _getApproved(id);
+        assembly {
+            approved := sload(add(GET_APPROVED_START_SLOT, id))
+        }
     }
 
     function _getIsApprovedForAll(address owner, address spender) internal view returns (bool result) {

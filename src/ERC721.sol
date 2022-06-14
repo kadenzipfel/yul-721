@@ -104,10 +104,17 @@ abstract contract ERC721 {
         }
     }
 
-    function balanceOf(address owner) public view virtual returns (uint256) {
-        require(owner != address(0), "ZERO_ADDRESS");
+    function balanceOf(address owner) public view virtual returns (uint256 _balance) {
+        assembly {
+            // require(owner != address(0), "ZERO_ADDRESS");
+            if iszero(owner) {
+                // 0x4E4F545F4D494E544544: "NOT_MINTED"
+                mstore(0x00, 0x5A45524F5F41444452455353)
+                revert(0x14, 0x0c)
+            }
 
-        return _getBalanceOf(owner);
+            _balance := sload(mul(BALANCE_OF_SLOT_MUL, owner))
+        }
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -128,7 +135,7 @@ abstract contract ERC721 {
         }
     }
 
-    function getApproved(uint256 id) public view returns (address) {
+    function getApproved(uint256 id) public view returns (address approved) {
         return _getApproved(id);
     }
 

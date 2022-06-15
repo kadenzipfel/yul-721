@@ -226,37 +226,6 @@ abstract contract ERC721 {
         }
     }
 
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id
-    ) public virtual {
-        transferFrom(from, to, id);
-
-        require(
-            to.code.length == 0 ||
-                ERC721TokenReceiver(to).onERC721Received(msg.sender, from, id, "") ==
-                ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
-    }
-
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        bytes calldata data
-    ) public virtual {
-        transferFrom(from, to, id);
-
-        require(
-            to.code.length == 0 ||
-                ERC721TokenReceiver(to).onERC721Received(msg.sender, from, id, data) ==
-                ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
-    }
-
     /*//////////////////////////////////////////////////////////////
                               ERC165 LOGIC
     //////////////////////////////////////////////////////////////*/
@@ -346,36 +315,6 @@ abstract contract ERC721 {
                 id
             )
         }
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                        INTERNAL SAFE MINT LOGIC
-    //////////////////////////////////////////////////////////////*/
-
-    function _safeMint(address to, uint256 id) internal virtual {
-        _mint(to, id);
-
-        require(
-            to.code.length == 0 ||
-                ERC721TokenReceiver(to).onERC721Received(msg.sender, address(0), id, "") ==
-                ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
-    }
-
-    function _safeMint(
-        address to,
-        uint256 id,
-        bytes memory data
-    ) internal virtual {
-        _mint(to, id);
-
-        require(
-            to.code.length == 0 ||
-                ERC721TokenReceiver(to).onERC721Received(msg.sender, address(0), id, data) ==
-                ERC721TokenReceiver.onERC721Received.selector,
-            "UNSAFE_RECIPIENT"
-        );
     }
 }
 

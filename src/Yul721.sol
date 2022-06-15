@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
 
-/// @notice Modern, minimalist, and gas efficient ERC-721 implementation.
-/// @author Solmate (https://github.com/Rari-Capital/solmate/blob/main/src/tokens/ERC721.sol)
-abstract contract ERC721 {
+/// @notice Minimalist ERC-721 implementation written in assembly.
+/// @author https://github.com/kadenzipfel
+abstract contract Yul721 {
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -63,7 +63,7 @@ abstract contract ERC721 {
                       ERC721 BALANCE/OWNER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    uint256 constant OWNER_OF_START_SLOT = 0x1000;
+    uint256 constant OWNER_OF_START_SLOT = 0x10;
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
         assembly {

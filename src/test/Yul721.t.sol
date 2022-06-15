@@ -4,10 +4,10 @@ pragma solidity 0.8.10;
 import {DSTestPlus} from "solmate/test/utils/DSTestPlus.sol";
 import {DSInvariantTest} from "solmate/test/utils/DSInvariantTest.sol";
 
-import {ERC721TokenReceiver, ERC721} from "../ERC721.sol";
+import {ERC721TokenReceiver, Yul721} from "../Yul721.sol";
 
-contract MockERC721 is ERC721 {
-    constructor() ERC721("Token", "TKN") {}
+contract MockYul721 is Yul721 {
+    constructor() Yul721("Token", "TKN") {}
 
     function tokenURI(uint256) public pure virtual override returns (string memory) {}
 
@@ -66,10 +66,10 @@ contract WrongReturnDataERC721Recipient is ERC721TokenReceiver {
 contract NonERC721Recipient {}
 
 contract ERC721Test is DSTestPlus {
-    MockERC721 token;
+    MockYul721 token;
 
     function setUp() public {
-        token = new MockERC721();
+        token = new MockYul721();
     }
 
     function invariantMetadata() public {

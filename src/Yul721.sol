@@ -28,7 +28,7 @@ abstract contract Yul721 {
             let nameLength
             for { let i := 0 } lt(i, 32) { i := add(i, 1) }
             {
-                if iszero(shl(mul(add(i, 1), 0x08), nameBytes)) { 
+                if iszero(shl(mul(add(i, 1), 0x08), nameBytes)) {
                     nameLength := add(i, 1)
                     break
                 }
@@ -78,7 +78,7 @@ abstract contract Yul721 {
         }
     }
 
-    uint256 constant BALANCE_OF_SLOT_MUL = 0x100000000000000000000000;
+    uint256 constant BALANCE_OF_SLOT_SHIFT = 96;
 
     function balanceOf(address owner) public view virtual returns (uint256 _balance) {
         assembly {
@@ -89,7 +89,7 @@ abstract contract Yul721 {
                 revert(0x14, 0x0c)
             }
 
-            _balance := sload(mul(BALANCE_OF_SLOT_MUL, owner))
+            _balance := sload(shl(BALANCE_OF_SLOT_SHIFT, owner))
         }
     }
 
@@ -204,9 +204,9 @@ abstract contract Yul721 {
             // ownership above and the recipient's balance can't realistically overflow.
 
             // Decrement from balance
-            sstore(mul(BALANCE_OF_SLOT_MUL, from), sub(sload(mul(BALANCE_OF_SLOT_MUL, from)), 1))
+            sstore(shl(BALANCE_OF_SLOT_SHIFT, from), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, from)), 1))
             // Increment to balance
-            sstore(mul(BALANCE_OF_SLOT_MUL, to), add(sload(mul(BALANCE_OF_SLOT_MUL, to)), 1))
+            sstore(shl(BALANCE_OF_SLOT_SHIFT, to), add(sload(shl(BALANCE_OF_SLOT_SHIFT, to)), 1))
 
             // Set to address as owner
             sstore(add(OWNER_OF_START_SLOT, id), to)
@@ -267,7 +267,7 @@ abstract contract Yul721 {
 
             // Increment balance of recipient
             // Counter overflow is incredibly unrealistic.
-            sstore(mul(BALANCE_OF_SLOT_MUL, to), add(sload(mul(BALANCE_OF_SLOT_MUL, to)), 1))
+            sstore(shl(BALANCE_OF_SLOT_SHIFT, to), add(sload(shl(BALANCE_OF_SLOT_SHIFT, to)), 1))
 
             // Set ownerOf
             sstore(add(OWNER_OF_START_SLOT, id), to)
@@ -297,7 +297,7 @@ abstract contract Yul721 {
 
             // Decrement balance of recipient
             // Ownership check above ensures no underflow.
-            sstore(mul(BALANCE_OF_SLOT_MUL, owner), sub(sload(mul(BALANCE_OF_SLOT_MUL, owner)), 1))
+            sstore(shl(BALANCE_OF_SLOT_SHIFT, owner), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, owner)), 1))
 
             // Set owner to zero address
             sstore(add(OWNER_OF_START_SLOT, id), 0)

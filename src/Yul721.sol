@@ -114,7 +114,7 @@ abstract contract Yul721 {
 
     uint256 constant GET_APPROVED_START_SLOT = 0x10000000;
 
-    //        GETAPPROVED STORAGE
+    //         GETAPPROVED STORAGE
     // ======================================
     // Slot: 0x10000000 + id (268435456 + id)
     // ======================================
@@ -127,7 +127,7 @@ abstract contract Yul721 {
 
     //       ISAPPROVEDFORALL STORAGE
     // =====================================
-    // Slot: Owner address * spender address
+    // Slot: Owner address + spender address
     // =====================================
 
     function isApprovedForAll(address owner, address spender) public view returns (bool approvedForAll) {

@@ -19,7 +19,6 @@ abstract contract Yul721 {
     //////////////////////////////////////////////////////////////*/
 
     uint256 constant NAME_SLOT = 0x00;
-    uint256 constant SYMBOL_SLOT = 0x01;
 
     function name() public view returns (string memory) {
         assembly {
@@ -38,6 +37,8 @@ abstract contract Yul721 {
             return(0x20, 0x60)
         }
     }
+
+    uint256 constant SYMBOL_SLOT = 0x01;
 
     function symbol() public view returns (string memory) {
         assembly {
@@ -65,6 +66,14 @@ abstract contract Yul721 {
 
     uint256 constant OWNER_OF_START_SLOT = 0x10;
 
+    //         OWNEROF STORAGE
+    // ===================================
+    // Slot: 0x10 + id (16 + id)
+    // Lower bound: 0x10 (16)
+    // Upper bound: 0x10000000 (268435456)
+    // Max size: 0xFFFFFF0 (268435440)
+    // ===================================
+
     function ownerOf(uint256 id) public view virtual returns (address owner) {
         assembly {
             owner := sload(add(OWNER_OF_START_SLOT, id))
@@ -79,6 +88,12 @@ abstract contract Yul721 {
     }
 
     uint256 constant BALANCE_OF_SLOT_SHIFT = 96;
+
+    //                      BALANCEOF STORAGE
+    // ==================================================================
+    // Slot: Owner address << 96, e.g. 
+    // 0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef000000000000000000000000
+    // ==================================================================
 
     function balanceOf(address owner) public view virtual returns (uint256 _balance) {
         assembly {
@@ -99,11 +114,21 @@ abstract contract Yul721 {
 
     uint256 constant GET_APPROVED_START_SLOT = 0x10000000;
 
+    //        GETAPPROVED STORAGE
+    // ======================================
+    // Slot: 0x10000000 + id (268435456 + id)
+    // ======================================
+
     function getApproved(uint256 id) public view returns (address approved) {
         assembly {
             approved := sload(add(GET_APPROVED_START_SLOT, id))
         }
     }
+
+    //       ISAPPROVEDFORALL STORAGE
+    // =====================================
+    // Slot: Owner address * spender address
+    // =====================================
 
     function isApprovedForAll(address owner, address spender) public view returns (bool approvedForAll) {
         assembly {
@@ -115,7 +140,7 @@ abstract contract Yul721 {
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    // Params must be: name, symbol
+    // Params must be: (name, symbol), in that order
     constructor(string memory, string memory) {
         assembly {
             sstore(NAME_SLOT, mload(0xa0))

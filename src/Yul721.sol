@@ -132,10 +132,12 @@ abstract contract Yul721 {
             let owner := sload(add(OWNER_OF_START_SLOT, id))
 
             // require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
-            if iszero(or(eq(caller(), owner), sload(add(owner, caller())))) {
-                // 0x4E4F545F415554484F52495A4544: "NOT_AUTHORIZED"
-                mstore(0x00, 0x4E4F545F415554484F52495A4544)
-                revert(0x12, 0x0E)
+            if iszero(eq(caller(), owner)) {
+                if iszero(sload(add(owner, caller()))) {
+                    // 0x4E4F545F415554484F52495A4544: "NOT_AUTHORIZED"
+                    mstore(0x00, 0x4E4F545F415554484F52495A4544)
+                    revert(0x12, 0x0E)
+                }
             }
 
             // Set approval

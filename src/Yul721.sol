@@ -344,13 +344,6 @@ abstract contract Yul721 {
                 revert(0x16, 0x0a)
             }
 
-            // Prevent attacker from overwriting a storage slot by bounding id
-            if gt(id, 0xFFFFFEF) {
-                // 0x455843454544535F55505045525F424F554E44: "EXCEEDS_UPPER_BOUND"
-                mstore(0x00, 0x455843454544535F55505045525F424F554E44)
-                revert(0x0D, 0x13)
-            }
-
             // Decrement balance of recipient
             // Ownership check above ensures no underflow.
             sstore(shl(BALANCE_OF_SLOT_SHIFT, owner), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, owner)), 1))

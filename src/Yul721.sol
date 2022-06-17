@@ -20,6 +20,8 @@ abstract contract Yul721 {
 
     uint256 constant NAME_SLOT = 0x00;
 
+    // Should not be used for anything other than display purposes, 
+    // it will break memory
     function name() public view returns (string memory) {
         assembly {
             mstore(0x20, 0x20)
@@ -32,6 +34,7 @@ abstract contract Yul721 {
                     break
                 }
             }
+            // fuck memory safety, all my homies hate memory safety
             mstore(0x60, nameBytes)
             mstore8(0x5f, nameLength)
             return(0x20, 0x60)
@@ -40,6 +43,8 @@ abstract contract Yul721 {
 
     uint256 constant SYMBOL_SLOT = 0x01;
 
+    // Should not be used for anything other than display purposes, 
+    // it will break memory
     function symbol() public view returns (string memory) {
         assembly {
             mstore(0x20, 0x20)
@@ -52,6 +57,7 @@ abstract contract Yul721 {
                     break
                 }
             }
+            // fuck memory safety, all my homies hate memory safety
             mstore(0x60, symbolBytes)
             mstore8(0x5f, symbolLength)
             return(0x20, 0x60)

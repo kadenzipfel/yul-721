@@ -67,6 +67,7 @@ contract NonERC721Recipient {}
 
 contract ERC721Test is DSTestPlus {
     MockYul721 token;
+    uint256 constant MAX_ID = 0xFFFFFEF;
 
     function setUp() public {
         token = new MockYul721();
@@ -234,6 +235,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testMint(address to, uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0)) to = address(0xBEEF);
 
         token.mint(to, id);
@@ -243,6 +245,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testBurn(address to, uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0)) to = address(0xBEEF);
 
         token.mint(to, id);
@@ -255,6 +258,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testApprove(address to, uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0)) to = address(0xBEEF);
 
         token.mint(address(this), id);
@@ -265,6 +269,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testApproveBurn(address to, uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         token.mint(address(this), id);
 
         token.approve(address(to), id);
@@ -285,6 +290,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testTransferFrom(uint256 id, address to) public {
+        if (id > MAX_ID) id = MAX_ID;
         address from = address(0xABCD);
 
         if (to == address(0) || to == from) to = address(0xBEEF);
@@ -303,6 +309,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testTransferFromSelf(uint256 id, address to) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0) || to == address(this)) to = address(0xBEEF);
 
         token.mint(address(this), id);
@@ -316,6 +323,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testTransferFromApproveAll(uint256 id, address to) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0) || to == address(this)) to = address(0xBEEF);
 
         address from = address(0xABCD);
@@ -334,10 +342,12 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testFailMintToZero(uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         token.mint(address(0), id);
     }
 
     function testFailDoubleMint(uint256 id, address to) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0)) to = address(0xBEEF);
 
         token.mint(to, id);
@@ -345,10 +355,12 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testFailBurnUnMinted(uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         token.burn(id);
     }
 
     function testFailDoubleBurn(uint256 id, address to) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (to == address(0)) to = address(0xBEEF);
 
         token.mint(to, id);
@@ -358,6 +370,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testFailApproveUnMinted(uint256 id, address to) public {
+        if (id > MAX_ID) id = MAX_ID;
         token.approve(to, id);
     }
 
@@ -366,6 +379,7 @@ contract ERC721Test is DSTestPlus {
         uint256 id,
         address to
     ) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (owner == address(0) || owner == address(this)) owner = address(0xBEEF);
 
         token.mint(owner, id);
@@ -378,6 +392,7 @@ contract ERC721Test is DSTestPlus {
         address to,
         uint256 id
     ) public {
+        if (id > MAX_ID) id = MAX_ID;
         token.transferFrom(from, to, id);
     }
 
@@ -387,6 +402,7 @@ contract ERC721Test is DSTestPlus {
         address to,
         uint256 id
     ) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (owner == address(0)) to = address(0xBEEF);
         if (from == owner) revert();
 
@@ -396,6 +412,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testFailTransferFromToZero(uint256 id) public {
+        if (id > MAX_ID) id = MAX_ID;
         token.mint(address(this), id);
 
         token.transferFrom(address(this), address(0), id);
@@ -406,6 +423,7 @@ contract ERC721Test is DSTestPlus {
         address to,
         uint256 id
     ) public {
+        if (id > MAX_ID) id = MAX_ID;
         if (from == address(this)) from = address(0xBEEF);
 
         token.mint(from, id);
@@ -414,6 +432,7 @@ contract ERC721Test is DSTestPlus {
     }
 
     function testFailOwnerOfUnminted(uint256 id) public view {
+        if (id > MAX_ID) id = MAX_ID;
         token.ownerOf(id);
     }
 }

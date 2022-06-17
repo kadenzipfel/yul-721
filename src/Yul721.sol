@@ -166,6 +166,7 @@ abstract contract Yul721 {
             }
 
             // Set approval
+            // Slot overwrite attack impossible because of owner check above
             sstore(add(GET_APPROVED_START_SLOT, id), spender)
             
             // emit Approval(owner, spender, id);
@@ -183,6 +184,7 @@ abstract contract Yul721 {
     function setApprovalForAll(address operator, bool approved) public virtual {
         assembly {
             // Set approval for all
+            // TODO: Vulnerable to slot overwrite attack
             sstore(add(caller(), operator), approved)
 
             // emit ApprovalForAll(msg.sender, operator, approved);
@@ -231,14 +233,18 @@ abstract contract Yul721 {
             // ownership above and the recipient's balance can't realistically overflow.
 
             // Decrement from balance
+            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, from), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, from)), 1))
             // Increment to balance
+            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, to), add(sload(shl(BALANCE_OF_SLOT_SHIFT, to)), 1))
 
             // Set to address as owner
+            // Slot overwrite attack impossible because of owner check above
             sstore(add(OWNER_OF_START_SLOT, id), to)
 
             // Set approved to zero address
+            // Slot overwrite attack impossible because of owner check above
             sstore(add(GET_APPROVED_START_SLOT, id), 0)
 
             // emit Transfer(from, to, id);
@@ -301,9 +307,11 @@ abstract contract Yul721 {
 
             // Increment balance of recipient
             // Counter overflow is incredibly unrealistic.
+            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, to), add(sload(shl(BALANCE_OF_SLOT_SHIFT, to)), 1))
 
             // Set ownerOf
+            // Slot overwrite attack impossible because of owner check above along with bounded id
             sstore(add(OWNER_OF_START_SLOT, id), to)
 
             // emit Transfer(address(0), to, id);
@@ -329,14 +337,24 @@ abstract contract Yul721 {
                 revert(0x16, 0x0a)
             }
 
+            // Prevent attacker from overwriting a storage slot by bounding id
+            if gt(id, 0xFFFFFEF) {
+                // 0x455843454544535F55505045525F424F554E44: "EXCEEDS_UPPER_BOUND"
+                mstore(0x00, 0x455843454544535F55505045525F424F554E44)
+                revert(0x0D, 0x13)
+            }
+
             // Decrement balance of recipient
             // Ownership check above ensures no underflow.
+            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, owner), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, owner)), 1))
 
             // Set owner to zero address
+            // Slot overwrite attack impossible because of owner check above along with bounded id
             sstore(add(OWNER_OF_START_SLOT, id), 0)
 
             // Clear approval
+            // Slot overwrite attack impossible because of owner check above along with bounded id
             sstore(add(GET_APPROVED_START_SLOT, id), 0)
 
             // emit Transfer(owner, address(0), id);

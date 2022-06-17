@@ -70,8 +70,8 @@ abstract contract Yul721 {
     // ===================================
     // Slot: 0x10 + id (16 + id)
     // Lower bound: 0x10 (16)
-    // Upper bound: 0x10000000 (268435456)
-    // Max size: 0xFFFFFF0 (268435440)
+    // Upper bound: 0xFFFFFFF (268435455)
+    // Max size: 0xFFFFFEF (268435439)
     // ===================================
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
@@ -117,6 +117,8 @@ abstract contract Yul721 {
     //         GETAPPROVED STORAGE
     // ======================================
     // Slot: 0x10000000 + id (268435456 + id)
+    // Lower bound: 0x10000000 (268435456)
+    // Upper bound: 0x1FFFFFEF (536870911)
     // ======================================
 
     function getApproved(uint256 id) public view returns (address approved) {

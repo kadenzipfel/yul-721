@@ -127,14 +127,16 @@ abstract contract Yul721 {
         }
     }
 
-    //       ISAPPROVEDFORALL STORAGE
-    // =====================================
-    // Slot: Owner address + spender address
-    // =====================================
+    //          ISAPPROVEDFORALL STORAGE
+    // ============================================
+    // Slot: keccak(address owner, address spender)
+    // ============================================
 
     function isApprovedForAll(address owner, address spender) public view returns (bool approvedForAll) {
         assembly {
-            approvedForAll := sload(add(owner, spender))
+            mstore(0x00, owner)
+            mstore(0x20, spender)
+            approvedForAll := sload(keccak256(0x00, 0x40))
         }
     }
 
@@ -160,7 +162,9 @@ abstract contract Yul721 {
 
             // require(msg.sender == owner || isApprovedForAll[owner][msg.sender], "NOT_AUTHORIZED");
             if iszero(eq(caller(), owner)) {
-                if iszero(sload(add(owner, caller()))) {
+                mstore(0x00, owner)
+                mstore(0x20, caller())
+                if iszero(sload(keccak256(0x00, 0x40))) {
                     // 0x4E4F545F415554484F52495A4544: "NOT_AUTHORIZED"
                     mstore(0x00, 0x4E4F545F415554484F52495A4544)
                     revert(0x12, 0x0E)
@@ -186,8 +190,9 @@ abstract contract Yul721 {
     function setApprovalForAll(address operator, bool approved) public virtual {
         assembly {
             // Set approval for all
-            // TODO: Vulnerable to slot overwrite attack
-            sstore(add(caller(), operator), approved)
+            mstore(0x00, caller())
+            mstore(0x20, operator)
+            sstore(keccak256(0x00, 0x40), approved)
 
             // emit ApprovalForAll(msg.sender, operator, approved);
             log4(
@@ -225,7 +230,10 @@ abstract contract Yul721 {
             //     msg.sender == from || isApprovedForAll[from][msg.sender] || msg.sender == getApproved[id],
             //     "NOT_AUTHORIZED"
             // );
-            if iszero(or(eq(caller(), from), or(sload(add(from, caller())), sload(add(GET_APPROVED_START_SLOT, id))))) {
+            mstore(0x00, from)
+            mstore(0x20, caller())
+            // TODO: Try short circuiting
+            if iszero(or(eq(caller(), from), or(sload(keccak256(0x00, 0x40)), sload(add(GET_APPROVED_START_SLOT, id))))) {
                 // 0x4E4F545F415554484F52495A4544: "NOT_AUTHORIZED"
                 mstore(0x00, 0x4E4F545F415554484F52495A4544)
                 revert(0x12, 0x0E)

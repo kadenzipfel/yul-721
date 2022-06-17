@@ -243,10 +243,8 @@ abstract contract Yul721 {
             // ownership above and the recipient's balance can't realistically overflow.
 
             // Decrement from balance
-            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, from), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, from)), 1))
             // Increment to balance
-            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, to), add(sload(shl(BALANCE_OF_SLOT_SHIFT, to)), 1))
 
             // Set to address as owner
@@ -317,7 +315,6 @@ abstract contract Yul721 {
 
             // Increment balance of recipient
             // Counter overflow is incredibly unrealistic.
-            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, to), add(sload(shl(BALANCE_OF_SLOT_SHIFT, to)), 1))
 
             // Set ownerOf
@@ -356,7 +353,6 @@ abstract contract Yul721 {
 
             // Decrement balance of recipient
             // Ownership check above ensures no underflow.
-            // TODO: Possibly vulnerable to slot overwrite attack
             sstore(shl(BALANCE_OF_SLOT_SHIFT, owner), sub(sload(shl(BALANCE_OF_SLOT_SHIFT, owner)), 1))
 
             // Set owner to zero address

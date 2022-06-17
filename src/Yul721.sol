@@ -153,8 +153,9 @@ abstract contract Yul721 {
     // Params must be: (name, symbol), in that order
     constructor(string memory, string memory) {
         assembly {
-            sstore(NAME_SLOT, mload(0xa0))
-            sstore(SYMBOL_SLOT, mload(0xe0))
+            let fmp := mload(0x40)
+            sstore(NAME_SLOT, mload(sub(fmp, 0x60)))
+            sstore(SYMBOL_SLOT, mload(sub(fmp, 0x20)))
         }
     }
 

@@ -67,7 +67,7 @@ contract NonERC721Recipient {}
 
 contract ERC721Test is DSTestPlus {
     MockYul721 token;
-    uint256 constant MAX_ID = 0xFFFFFEF;
+    uint256 constant MAX_ID = 0xFFFEFFF;
 
     function setUp() public {
         token = new MockYul721();

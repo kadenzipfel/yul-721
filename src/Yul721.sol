@@ -18,7 +18,8 @@ abstract contract Yul721 {
                          METADATA STORAGE/LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    uint256 constant NAME_SLOT = 0x00;
+    // keccak("name")
+    uint256 constant NAME_SLOT = 0xb4deace9b1788ce1b03518da303be35696899d14b9f97084f0acb409d7135d4f;
 
     // Should not be used for anything other than display purposes, 
     // it will break memory
@@ -41,7 +42,8 @@ abstract contract Yul721 {
         }
     }
 
-    uint256 constant SYMBOL_SLOT = 0x01;
+    // keccak("symbol")
+    uint256 constant SYMBOL_SLOT = 0x7d69ccd04f2a4cdb55d8c11fc025a501f1d8824144c5020daba01cb5bd77c117;
 
     // Should not be used for anything other than display purposes, 
     // it will break memory
@@ -70,14 +72,15 @@ abstract contract Yul721 {
                       ERC721 BALANCE/OWNER STORAGE
     //////////////////////////////////////////////////////////////*/
 
-    uint256 constant OWNER_OF_START_SLOT = 0x10;
+    uint256 constant OWNER_OF_START_SLOT = 0x1000;
+    uint256 constant MAX_ID = 0xFFFEFFF;
 
     //         OWNEROF STORAGE
     // ===================================
-    // Slot: 0x10 + id (16 + id)
-    // Lower bound: 0x10 (16)
+    // Slot: 0x1000 + id (16 + id)
+    // Lower bound: 0x1000 (16)
     // Upper bound: 0xFFFFFFF (268435455)
-    // Max size: 0xFFFFFEF (268435439)
+    // Max size: 0xFFFEFFF (268435439)
     // ===================================
 
     function ownerOf(uint256 id) public view virtual returns (address owner) {
@@ -124,7 +127,7 @@ abstract contract Yul721 {
     // ======================================
     // Slot: 0x10000000 + id (268435456 + id)
     // Lower bound: 0x10000000 (268435456)
-    // Upper bound: 0x1FFFFFEF (536870911)
+    // Upper bound: 0x1FFFEFFF (536870911)
     // ======================================
 
     function getApproved(uint256 id) public view returns (address approved) {
@@ -314,7 +317,7 @@ abstract contract Yul721 {
             }
 
             // Prevent attacker from overwriting a non-ownerOf storage slot by bounding id
-            if gt(id, 0xFFFFFEF) {
+            if gt(id, MAX_ID) {
                 // 0x455843454544535F55505045525F424F554E44: "EXCEEDS_UPPER_BOUND"
                 mstore(0x00, 0x455843454544535F55505045525F424F554E44)
                 revert(0x0D, 0x13)

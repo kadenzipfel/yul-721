@@ -23,7 +23,7 @@ abstract contract Yul721 {
 
     // Should not be used for anything other than display purposes, 
     // it will break memory
-    function name() public view returns (string memory) {
+    function name() external view returns (string memory) {
         assembly {
             mstore(0x20, 0x20)
             let nameBytes := sload(NAME_SLOT)
@@ -47,7 +47,7 @@ abstract contract Yul721 {
 
     // Should not be used for anything other than display purposes, 
     // it will break memory
-    function symbol() public view returns (string memory) {
+    function symbol() external view returns (string memory) {
         assembly {
             mstore(0x20, 0x20)
             let symbolBytes := sload(SYMBOL_SLOT)
